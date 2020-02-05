@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -12,6 +13,7 @@ import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 
 @TeleOp()
+@Disabled
 public class ColorSensorOpMode extends OpMode implements CameraBridgeViewBase.CvCameraViewListener2 {
 
     private Robot robot = new Robot();

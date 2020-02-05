@@ -85,6 +85,8 @@ public abstract class DogeCVDetector extends OpenCVPipeline{
         //Print Info
         Imgproc.putText(workingMat,"DogeCV 2019.1 " + detectorName + ": " + getAdjustedSize().toString() + " - " + speed.toString() ,new Point(5,30),0,0.5,new Scalar(0,255,255),2);
 
+        rgba.release();
+
         return workingMat;
     }
 
