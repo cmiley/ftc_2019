@@ -64,9 +64,6 @@ public class TetrixTeleop extends LinearOpMode
     private DcMotor leftDrive = null;
     private DcMotor rightDrive = null;
 
-    private StartDetector detector = new StartDetector(); // Create detector
-
-
     /*
      * Code to run ONCE when the driver hits INIT
      */
@@ -84,12 +81,6 @@ public class TetrixTeleop extends LinearOpMode
         // Reverse the motor that runs backwards when connected directly to the battery
         leftDrive.setDirection(DcMotor.Direction.REVERSE);
         rightDrive.setDirection(DcMotor.Direction.FORWARD);
-
-        detector.init(hardwareMap.appContext, CameraViewDisplay.getInstance()); // Initialize it with the app context and camera
-        detector.useDefaults(); // Set detector to use default settings
-
-        detector.enable(); // Start the detector!
-        Log.e("Debug", "1 " +  detector.start_color);
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");

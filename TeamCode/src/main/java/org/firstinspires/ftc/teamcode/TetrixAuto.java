@@ -113,6 +113,12 @@ public class TetrixAuto extends LinearOpMode {
                           robot.rightDrive.getCurrentPosition());
         telemetry.update();
 
+        detector.init(hardwareMap.appContext, CameraViewDisplay.getInstance()); // Initialize it with the app context and camera
+        detector.useDefaults(); // Set detector to use default settings
+
+        detector.enable(); // Start the detector!
+        Log.e("Debug", "1 " +  detector.start_color);
+
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
 
