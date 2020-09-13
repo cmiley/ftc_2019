@@ -156,24 +156,24 @@ public class TetrixAuto extends LinearOpMode {
         telemetry.update();
 
 
-        if (ring_count == 0) {
-            drive_da_motor(0.4, 0.4, (long) 4);
-        }
-        else if (ring_count == 1) {
+        if (ring_count == 4) {
             drive_da_motor(0.4, 0.4, (long) 7);
             sleep(1000);
             drive_da_motor(-0.4, -0.4, (long) 2);
         }
-        else if (ring_count == 4) {
-            drive_da_motor(0.4, 0.4, (long) 3);
+        else if (ring_count == 1) {
+            drive_da_motor(0.4, 0.4, (long) 4);
             sleep(1000);
-            drive_da_motor(-0.4, 0.4, (long) 1);
+            drive_da_motor(-0.3, 0.4, (long) 1);
             sleep(1000);
-            drive_da_motor(0.4, 0.5, (long) 2);
+            drive_da_motor(0.4, 0.5, (long) 1.5);
             sleep(1000);
             drive_da_motor(-0.4, -0.4, (long) 1);
         }
-        sleep(5000);
+        else {
+            drive_da_motor(0.4, 0.4, (long) 4);
+        }
+            sleep(5000);
 //        encoderDrive(DRIVE_SPEED, 10, 10, 1.0);
 
         telemetry.addData("Path", "Complete");
