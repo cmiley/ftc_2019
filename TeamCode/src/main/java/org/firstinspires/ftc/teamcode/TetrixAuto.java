@@ -37,6 +37,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import com.disnodeteam.dogecv.CameraViewDisplay;
@@ -78,16 +79,24 @@ import org.firstinspires.ftc.robotcontroller.external.samples.HardwarePushbot;
 public class TetrixAuto extends LinearOpMode {
 
     /* Declare OpMode members. */
-    HardwarePushbot         robot   = new HardwarePushbot();   // Use a Pushbot's hardware
+//    HardwarePushbot         robot   = new HardwarePushbot();   // Use a Pushbot's hardware
+    private DcMotor leftDrive = null;
+    private DcMotor rightDrive = null;
+
+    // Grabber
+    private Servo servoTest = null;
+
+    // Arm Motor
+    private DcMotor armDrive = null;
     private ElapsedTime     runtime = new ElapsedTime();
 
     static final double     COUNTS_PER_MOTOR_REV    = 1440 ;    // eg: TETRIX Motor Encoder
-    static final double     DRIVE_GEAR_REDUCTION    = 1.6666666667 ;     // This is < 1.0 if geared UP
+    static final double     DRIVE_GEAR_REDUCTION    = 0.1666667 ;     // This is < 1.0 if geared UP
     static final double     WHEEL_DIAMETER_INCHES   = 4.0 ;     // For figuring circumference
     static final double     COUNTS_PER_INCH         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
                                                       (WHEEL_DIAMETER_INCHES * 3.1415);
-    static final double     DRIVE_SPEED             = 0.6;
-    static final double     TURN_SPEED              = 0.5;
+    static final double     DRIVE_SPEED             = 0.2;
+    static final double     TURN_SPEED              = 0.2;
 
     @Override
     public void runOpMode() {
@@ -96,25 +105,31 @@ public class TetrixAuto extends LinearOpMode {
          * Initialize the drive system variables.
          * The init() method of the hardware class does all the work here
          */
-        robot.init(hardwareMap);
+        leftDrive  = hardwareMap.get(DcMotor.class, "left_drive");
+        rightDrive = hardwareMap.get(DcMotor.class, "right_drive");
+
+        leftDrive.setDirection(DcMotor.Direction.REVERSE);
+        rightDrive.setDirection(DcMotor.Direction.FORWARD);
+
+        armDrive = hardwareMap.get(DcMotor.class, "arm");
 
         // Send telemetry message to signify robot waiting;
         telemetry.addData("Status", "Resetting Encoders");    //
         telemetry.update();
 
-        robot.leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-        robot.leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        robot.rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//        leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//        rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//
+//        leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//        rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // Send telemetry message to indicate successful Encoder reset
         telemetry.addData("Path0",  "Starting at %7d :%7d",
-                          robot.leftDrive.getCurrentPosition(),
-                          robot.rightDrive.getCurrentPosition());
+                          leftDrive.getCurrentPosition(),
+                          rightDrive.getCurrentPosition());
         telemetry.update();
 
-        // Code for detecting corrrect side of alliance by color
+        // Code for detecting correct side of alliance by color
 //        StartDetector detector = new StartDetector(); // Create detector
 //        detector.init(hardwareMap.appContext, CameraViewDisplay.getInstance()); // Initialize it with the app context and camera
 //        detector.useDefaults(); // Set detector to use default settings
@@ -133,18 +148,29 @@ public class TetrixAuto extends LinearOpMode {
         ringdetector.enable();
 
         sleep(1000);
-        Log.d("TetrixAuto", "Rings Detected: " + ringdetector.ring_count);
+        int ring_count = ringdetector.get_ring_count();
+        Log.d("TetrixAuto", "Rings Detected: " + ring_count);
 
-        if (ringdetector.ring_count == 0) {
-            encoderDrive(DRIVE_SPEED, 50, 60, 5000);
+
+        if (ring_count == 0) {
+            drive_da_motor(0.4, 0.4, (long) 4);
         }
-        else if (ringdetector.ring_count == 1) {
-            encoderDrive(DRIVE_SPEED, 50, 60,5000);
+        else if (ring_count == 1) {
+            drive_da_motor(0.4, 0.4, (long) 7);
+            sleep(1000);
+            drive_da_motor(-0.4, -0.4, (long) 2);
         }
-        else if (ringdetector.ring_count == 4) {
-            encoderDrive(DRIVE_SPEED, 50, 60, 5000);
+        else if (ring_count == 4) {
+            drive_da_motor(0.4, 0.4, (long) 3);
+            sleep(1000);
+            drive_da_motor(-0.4, 0.4, (long) 1);
+            sleep(1000);
+            drive_da_motor(0.4, 0.5, (long) 2);
+            sleep(1000);
+            drive_da_motor(-0.4, -0.4, (long) 1);
         }
         sleep(5000);
+//        encoderDrive(DRIVE_SPEED, 10, 10, 1.0);
 
         telemetry.addData("Path", "Complete");
         telemetry.update();
@@ -158,57 +184,16 @@ public class TetrixAuto extends LinearOpMode {
      *  2) Move runs out of time
      *  3) Driver stops the opmode running.
      */
-    public void encoderDrive(double speed,
-                             double leftInches, double rightInches,
-                             double timeoutS) {
-        int newLeftTarget;
-        int newRightTarget;
+    public void drive_da_motor(double left_speed, double right_speed,
+                             long num_seconds) {
 
-        // Ensure that the opmode is still active
-        if (opModeIsActive()) {
+            leftDrive.setPower(left_speed);
+            rightDrive.setPower(right_speed);
 
-            // Determine new target position, and pass to motor controller
-            newLeftTarget = robot.leftDrive.getCurrentPosition() + (int)(leftInches * COUNTS_PER_INCH);
-            newRightTarget = robot.rightDrive.getCurrentPosition() + (int)(rightInches * COUNTS_PER_INCH);
-            robot.leftDrive.setTargetPosition(newLeftTarget);
-            robot.rightDrive.setTargetPosition(newRightTarget);
-
-            // Turn On RUN_TO_POSITION
-            robot.leftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            robot.rightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-            // reset the timeout time and start motion.
-            runtime.reset();
-            robot.leftDrive.setPower(Math.abs(speed));
-            robot.rightDrive.setPower(Math.abs(speed));
-
-            // keep looping while we are still active, and there is time left, and both motors are running.
-            // Note: We use (isBusy() && isBusy()) in the loop test, which means that when EITHER motor hits
-            // its target position, the motion will stop.  This is "safer" in the event that the robot will
-            // always end the motion as soon as possible.
-            // However, if you require that BOTH motors have finished their moves before the robot continues
-            // onto the next step, use (isBusy() || isBusy()) in the loop test.
-            while (opModeIsActive() &&
-                   (runtime.seconds() < timeoutS) &&
-                   (robot.leftDrive.isBusy() && robot.rightDrive.isBusy())) {
-
-                // Display it for the driver.
-                telemetry.addData("Path1",  "Running to %7d :%7d", newLeftTarget,  newRightTarget);
-                telemetry.addData("Path2",  "Running at %7d :%7d",
-                                            robot.leftDrive.getCurrentPosition(),
-                                            robot.rightDrive.getCurrentPosition());
-                telemetry.update();
-            }
+            sleep(num_seconds*1000);
 
             // Stop all motion;
-            robot.leftDrive.setPower(0);
-            robot.rightDrive.setPower(0);
-
-            // Turn off RUN_TO_POSITION
-            robot.leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            robot.rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-            //  sleep(250);   // optional pause after each move
-        }
+            leftDrive.setPower(0);
+            rightDrive.setPower(0);
     }
 }

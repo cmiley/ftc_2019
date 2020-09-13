@@ -15,7 +15,7 @@ public class RingDetector extends DogeCVDetector {
     private Mat displayMat = new Mat(); // Display debug info to the screen (this is what is returned)
     private Mat workingMat = new Mat(); // Used for preprocessing and working with (blurring as an example)
 
-    public int ring_count;
+    public int ring_count = -1;
     public boolean color_detected;
     private int frameNumber;
 
@@ -24,8 +24,7 @@ public class RingDetector extends DogeCVDetector {
      */
     public RingDetector() {
         super();
-        detectorName = "Start Detector"; // Set the detector name
-        ring_count = -1;
+        detectorName = "Ring Detector"; // Set the detector name
         color_detected = false;
         frameNumber = 0;
     }
@@ -62,11 +61,12 @@ public class RingDetector extends DogeCVDetector {
             double orange_pixel_count = Core.sumElems(cropped).val[0]/255;
             cropped.release();
             Log.d("RingDetector", "orange pixels: " + orange_pixel_count);
-            int ring_count = 0;
+            ring_count = 0;
             if (orange_pixel_count > 500)
                 ring_count = 1;
             if (orange_pixel_count > 1500)
                 ring_count = 4;
+
             Log.d("RingDetector", "ring number: " + ring_count);
         }
         return displayMat;
@@ -75,6 +75,10 @@ public class RingDetector extends DogeCVDetector {
     @Override
     public void useDefaults() {
 
+    }
+
+    public int get_ring_count() {
+        return ring_count;
     }
 
 }
