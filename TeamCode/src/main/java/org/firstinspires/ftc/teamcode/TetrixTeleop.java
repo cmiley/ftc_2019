@@ -37,6 +37,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 import com.disnodeteam.dogecv.detectors.StartDetector;
@@ -63,6 +64,8 @@ public class TetrixTeleop extends LinearOpMode
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor leftDrive = null;
     private DcMotor rightDrive = null;
+    private Servo servoTest = null;
+
 
     /*
      * Code to run ONCE when the driver hits INIT
@@ -81,6 +84,9 @@ public class TetrixTeleop extends LinearOpMode
         // Reverse the motor that runs backwards when connected directly to the battery
         leftDrive.setDirection(DcMotor.Direction.REVERSE);
         rightDrive.setDirection(DcMotor.Direction.FORWARD);
+
+        servoTest = hardwareMap.get(Servo.class, "grabber");
+        servoTest.setPosition(0);
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
@@ -115,6 +121,13 @@ public class TetrixTeleop extends LinearOpMode
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
+
+            if(gamepad1.b) {
+                servoTest.setPosition(0.4);
+            }
+            if(gamepad1.a){
+                servoTest.setPosition(0);
+            }
         }
     }
 }
