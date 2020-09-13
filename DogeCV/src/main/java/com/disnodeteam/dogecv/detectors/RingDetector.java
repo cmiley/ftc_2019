@@ -48,15 +48,17 @@ public class RingDetector extends DogeCVDetector {
 //        Log.d("StartDetector", "frame no: " + frameNumber);
         if(!color_detected && frameNumber > 0) {
             Mat hsv = new Mat();
-            Imgproc.cvtColor(workingMat, hsv, Imgproc.COLOR_BGR2HSV);
+            Imgproc.cvtColor(workingMat, hsv, Imgproc.COLOR_RGB2HSV);
             Log.d("RingDetector", "color converted");
 
             Mat mask = new Mat();
-            Core.inRange(hsv, new Scalar(5,160,80), new Scalar(45,240,240), mask);
+            Core.inRange(hsv, new Scalar(10,160,80), new Scalar(45,240,240), mask);
             hsv.release();
+
             Log.d("RingDetector", "thresholding done");
 
             Rect cropbox = new Rect(340,0,300,480);
+
             Mat cropped = new Mat(mask, cropbox);
             mask.release();
 
@@ -64,9 +66,9 @@ public class RingDetector extends DogeCVDetector {
             cropped.release();
             Log.d("RingDetector", "orange pixels: " + orange_pixel_count);
             ring_count = 0;
-            if (orange_pixel_count > 500)
+            if (orange_pixel_count > 500)  // but it could've been 420
                 ring_count = 1;
-            if (orange_pixel_count > 1500)
+            if (orange_pixel_count > 1250)
                 ring_count = 4;
 
             Log.d("RingDetector", "ring number: " + ring_count);
