@@ -32,6 +32,7 @@ package org.firstinspires.ftc.teamcode;
 import android.util.Log;
 
 import com.disnodeteam.dogecv.CameraViewDisplay;
+import com.disnodeteam.dogecv.DrawViewSource;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -64,8 +65,21 @@ public class TetrixTeleop extends LinearOpMode
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor leftDrive = null;
     private DcMotor rightDrive = null;
+
+    // Grabber
     private Servo servoTest = null;
 
+    // Arm Motor
+    private DcMotor armDrive = null;
+
+    /* Declare OpMode members. */
+    static final double     COUNTS_PER_MOTOR_REV    = 1440 ;    // eg: TETRIX Motor Encoder
+    static final double     DRIVE_GEAR_REDUCTION    = 2.0 ;     // This is < 1.0 if geared UP
+    static final double     WHEEL_DIAMETER_INCHES   = 4.0 ;     // For figuring circumference
+    static final double     COUNTS_PER_INCH         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
+            (WHEEL_DIAMETER_INCHES * 3.1415);
+    static final double     DRIVE_SPEED             = 0.2;
+    static final double     UP_POSITION             = 1.8;
 
     /*
      * Code to run ONCE when the driver hits INIT
@@ -79,6 +93,7 @@ public class TetrixTeleop extends LinearOpMode
         // step (using the FTC Robot Controller app on the phone).
         leftDrive  = hardwareMap.get(DcMotor.class, "left_drive");
         rightDrive = hardwareMap.get(DcMotor.class, "right_drive");
+        armDrive = hardwareMap.get(DcMotor.class, "arm");
 
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
@@ -111,12 +126,26 @@ public class TetrixTeleop extends LinearOpMode
 
             // Tank Mode uses one stick to control each wheel.
             // - This requires no math, but it is hard to drive forward slowly and keep straight.
-            leftPower = -gamepad1.left_stick_y;
-            rightPower = -gamepad1.right_stick_y;
+            if(gamepad1.right_trigger > 0) {
+                leftPower = -gamepad1.left_stick_y;
+                rightPower = -gamepad1.right_stick_y;
+            }
+            else {
+                leftPower = -gamepad1.left_stick_y / 2;
+                rightPower = -gamepad1.right_stick_y / 2;
+            }
 
             // Send calculated power to wheels
             leftDrive.setPower(leftPower);
             rightDrive.setPower(rightPower);
+
+            // Send power to arm motor
+            if (gamepad1.left_bumper) {
+                encoderDrive(DRIVE_SPEED, UP_POSITION, 1.0);  // Forward 5 inches w/ 5 s timeout
+            }
+            else if (gamepad1.right_bumper) {
+                encoderDrive(DRIVE_SPEED, -UP_POSITION, 1.0);
+            }
 
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
@@ -128,6 +157,53 @@ public class TetrixTeleop extends LinearOpMode
             if(gamepad1.a){
                 servoTest.setPosition(0);
             }
+        }
+    }
+
+    public void encoderDrive(double speed,
+                             double inches,
+                             double timeoutS) {
+
+        int target;
+
+        // Ensure that the opmode is still active
+        if (opModeIsActive()) {
+
+            // Determine new target position and pass to motor controller
+            target = (int) (armDrive.getCurrentPosition() + (int) inches * COUNTS_PER_INCH);
+            armDrive.setTargetPosition(target);
+
+            // Turn on RUN_TO_POSITION
+            armDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            // reset the timeout time and start motion
+            runtime.reset();
+            armDrive.setPower(Math.abs(speed));
+
+
+            // keep looping while we are still active, and there is time left, and both motors are running.
+            // Note: We use (isBusy() && isBusy()) in the loop test, which means that when EITHER motor hits
+            // its target position, the motion will stop.  This is "safer" in the event that the robot will
+            // always end the motion as soon as possible.
+            // However, if you require that BOTH motors have finished their moves before the robot continues
+            // onto the next step, use (isBusy() || isBusy()) in the loop test.
+            while (opModeIsActive() &&
+                    (runtime.seconds() < timeoutS) &&
+                    armDrive.isBusy()) {
+
+                // Display it for the driver.
+                telemetry.addData("armDrive", "Running to %7d", target);
+                telemetry.addData("Path2", "Running at %7d", armDrive.getCurrentPosition());
+                telemetry.update();
+            }
+
+            // Stop all motion
+            armDrive.setPower(0);
+
+            // Turn off RUN_TO_POSITION
+            //armDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+            //  sleep(250);   // optional pause after each move
         }
     }
 }
