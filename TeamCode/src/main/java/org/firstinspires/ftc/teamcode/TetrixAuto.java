@@ -29,11 +29,18 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import android.util.Log;
+
+import com.disnodeteam.dogecv.detectors.StonesDetector;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
+
+import com.disnodeteam.dogecv.CameraViewDisplay;
+import com.disnodeteam.dogecv.DogeCV;
+import com.disnodeteam.dogecv.detectors.StartDetector;
 
 import org.firstinspires.ftc.robotcontroller.external.samples.HardwarePushbot;
 
@@ -78,6 +85,18 @@ public class TetrixAuto extends LinearOpMode {
                                                       (WHEEL_DIAMETER_INCHES * 3.1415);
     static final double     DRIVE_SPEED             = 0.6;
     static final double     TURN_SPEED              = 0.5;
+
+    private StartDetector detector = new StartDetector(); // Create detector
+
+    @Override
+    public void init() {
+        // Set up detector
+        detector.init(hardwareMap.appContext, CameraViewDisplay.getInstance()); // Initialize it with the app context and camera
+        detector.useDefaults(); // Set detector to use default settings
+
+        detector.enable(); // Start the detector!
+        Log.e("Debug", "1 " +  detector.start_color);
+    }
 
     @Override
     public void runOpMode() {
