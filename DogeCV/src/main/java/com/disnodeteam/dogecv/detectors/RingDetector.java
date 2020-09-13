@@ -18,6 +18,7 @@ public class RingDetector extends DogeCVDetector {
     public int ring_count = -1;
     public boolean color_detected;
     private int frameNumber;
+    public double orange_pixel_count;
 
     /**
      * Simple constructor
@@ -27,6 +28,7 @@ public class RingDetector extends DogeCVDetector {
         detectorName = "Ring Detector"; // Set the detector name
         color_detected = false;
         frameNumber = 0;
+        orange_pixel_count = -1;
     }
 
 
@@ -58,7 +60,8 @@ public class RingDetector extends DogeCVDetector {
             Mat cropped = new Mat(mask, cropbox);
             mask.release();
 
-            double orange_pixel_count = Core.sumElems(cropped).val[0]/255;
+            orange_pixel_count = Core.sumElems(cropped).val[0]/255;
+
             cropped.release();
             Log.d("RingDetector", "orange pixels: " + orange_pixel_count);
             ring_count = 0;
