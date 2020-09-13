@@ -4,6 +4,7 @@ import android.util.Log;
 
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
+import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
@@ -16,7 +17,7 @@ public class StartDetector extends DogeCVDetector {
     private Mat workingMat = new Mat(); // Used for preprocessing and working with (blurring as an example)
 
     public int start_color;
-    public bool color_detected;
+    public boolean color_detected;
     private int frameNumber;
 
     /**
@@ -26,7 +27,7 @@ public class StartDetector extends DogeCVDetector {
         super();
         detectorName = "Start Detector"; // Set the detector name
         start_color = 0;
-        color_detected = False;
+        color_detected = false;
         frameNumber = 0;
     }
 
@@ -62,7 +63,7 @@ public class StartDetector extends DogeCVDetector {
             cropped_blue.release();
 
             if ((red_count > 0) || (blue_count > 0))
-                color_detected = True;
+                color_detected = true;
             if (red_count > blue_count)
                 start_color = 1;
             else
