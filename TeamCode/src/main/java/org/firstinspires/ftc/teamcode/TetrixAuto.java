@@ -31,6 +31,7 @@ package org.firstinspires.ftc.teamcode;
 
 import android.util.Log;
 
+import com.disnodeteam.dogecv.detectors.RingDetector;
 import com.disnodeteam.dogecv.detectors.StonesDetector;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
@@ -41,6 +42,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.disnodeteam.dogecv.CameraViewDisplay;
 import com.disnodeteam.dogecv.DogeCV;
 import com.disnodeteam.dogecv.detectors.StartDetector;
+import com.disnodeteam.dogecv.detectors.StonesDetector;
+
 
 import org.firstinspires.ftc.robotcontroller.external.samples.HardwarePushbot;
 
@@ -111,12 +114,21 @@ public class TetrixAuto extends LinearOpMode {
                           robot.rightDrive.getCurrentPosition());
         telemetry.update();
 
-        StartDetector detector = new StartDetector(); // Create detector
-        detector.init(hardwareMap.appContext, CameraViewDisplay.getInstance()); // Initialize it with the app context and camera
-        detector.useDefaults(); // Set detector to use default settings
+        // Code for detecting corrrect side of alliance by color
+//        StartDetector detector = new StartDetector(); // Create detector
+//        detector.init(hardwareMap.appContext, CameraViewDisplay.getInstance()); // Initialize it with the app context and camera
+//        detector.useDefaults(); // Set detector to use default settings
+//
+//        detector.enable(); // Start the detector!
+//        Log.e("Debug", "1 " +  detector.start_color);
 
-        detector.enable(); // Start the detector!
-        Log.e("Debug", "1 " +  detector.start_color);
+        RingDetector ringdetector = new RingDetector();
+        ringdetector.init(hardwareMap.appContext, CameraViewDisplay.getInstance());
+        ringdetector.useDefaults();
+
+        ringdetector.enable();
+        Log.d("TetrixAuto", "Rings Detected: " + ringdetector.ring_count);
+
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
