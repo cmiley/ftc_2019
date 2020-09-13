@@ -122,16 +122,18 @@ public class TetrixAuto extends LinearOpMode {
 //        detector.enable(); // Start the detector!
 //        Log.e("Debug", "1 " +  detector.start_color);
 
+
+        // Wait for the game to start (driver presses PLAY)
+        waitForStart();
+
+        sleep(1000);
+
         RingDetector ringdetector = new RingDetector();
         ringdetector.init(hardwareMap.appContext, CameraViewDisplay.getInstance());
         ringdetector.useDefaults();
 
         ringdetector.enable();
         Log.d("TetrixAuto", "Rings Detected: " + ringdetector.ring_count);
-
-
-        // Wait for the game to start (driver presses PLAY)
-        waitForStart();
 
         // Step through each leg of the path,
         // Note: Reverse movement is obtained by setting a negative distance (not speed)
