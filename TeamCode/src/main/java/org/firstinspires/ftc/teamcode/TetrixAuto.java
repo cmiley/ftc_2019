@@ -151,6 +151,10 @@ public class TetrixAuto extends LinearOpMode {
         int ring_count = ringdetector.get_ring_count();
         Log.d("TetrixAuto", "Rings Detected: " + ring_count);
 
+        Log.d("orange count",  "Orange pixels: " + ringdetector.orange_pixel_count);
+        telemetry.addData("orange count",  ringdetector.orange_pixel_count);
+        telemetry.update();
+
 
         if (ring_count == 0) {
             drive_da_motor(0.4, 0.4, (long) 4);
