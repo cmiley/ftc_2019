@@ -86,8 +86,6 @@ public class TetrixAuto extends LinearOpMode {
     static final double     DRIVE_SPEED             = 0.6;
     static final double     TURN_SPEED              = 0.5;
 
-    private StartDetector detector = new StartDetector(); // Create detector
-
     @Override
     public void runOpMode() {
 
@@ -113,6 +111,7 @@ public class TetrixAuto extends LinearOpMode {
                           robot.rightDrive.getCurrentPosition());
         telemetry.update();
 
+        StartDetector detector = new StartDetector(); // Create detector
         detector.init(hardwareMap.appContext, CameraViewDisplay.getInstance()); // Initialize it with the app context and camera
         detector.useDefaults(); // Set detector to use default settings
 
