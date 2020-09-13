@@ -126,24 +126,24 @@ public class TetrixAuto extends LinearOpMode {
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
 
-        sleep(1000);
-
         RingDetector ringdetector = new RingDetector();
         ringdetector.init(hardwareMap.appContext, CameraViewDisplay.getInstance());
         ringdetector.useDefaults();
 
         ringdetector.enable();
+
+        sleep(1000);
         Log.d("TetrixAuto", "Rings Detected: " + ringdetector.ring_count);
 
-        // Step through each leg of the path,
-        // Note: Reverse movement is obtained by setting a negative distance (not speed)
-        encoderDrive(DRIVE_SPEED,  48,  48, 5.0);  // S1: Forward 47 Inches with 5 Sec timeout
-        encoderDrive(TURN_SPEED,   12, -12, 4.0);  // S2: Turn Right 12 Inches with 4 Sec timeout
-        encoderDrive(DRIVE_SPEED, -24, -24, 4.0);  // S3: Reverse 24 Inches with 4 Sec timeout
-
-        robot.leftClaw.setPosition(1.0);            // S4: Stop and close the claw.
-        robot.rightClaw.setPosition(0.0);
-        sleep(1000);     // pause for servos to move
+        if (ringdetector.ring_count == 0) {
+            // push wobble goal to nearest square on right
+        }
+        else if (ringdetector.ring_count == 1) {
+            // push wobble goal to second nearest square on left
+        }
+        else if (ringdetector.ring_count == 4) {
+            // push wobble goal to furthest square on right
+        }
 
         telemetry.addData("Path", "Complete");
         telemetry.update();
