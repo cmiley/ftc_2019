@@ -29,19 +29,11 @@
 
 package org.firstinspires.ftc.teamcode;
 
-import android.util.Log;
-
-import com.disnodeteam.dogecv.CameraViewDisplay;
-import com.disnodeteam.dogecv.DrawViewSource;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
-import com.disnodeteam.dogecv.detectors.StartDetector;
 
 
 /**
@@ -71,6 +63,7 @@ public class TetrixTeleop extends LinearOpMode
 
     // Arm Motor
     private DcMotor armDrive = null;
+    private int armTarget = 0;
 
     /* Declare OpMode members. */
     static final double     COUNTS_PER_MOTOR_REV    = 1440 ;    // eg: TETRIX Motor Encoder
@@ -94,6 +87,8 @@ public class TetrixTeleop extends LinearOpMode
         leftDrive  = hardwareMap.get(DcMotor.class, "left_drive");
         rightDrive = hardwareMap.get(DcMotor.class, "right_drive");
         armDrive = hardwareMap.get(DcMotor.class, "arm");
+
+        armTarget = armDrive.getCurrentPosition();
 
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
@@ -141,11 +136,17 @@ public class TetrixTeleop extends LinearOpMode
 
             // Send power to arm motor
             if (gamepad1.left_bumper) {
-                encoderDrive(DRIVE_SPEED, UP_POSITION, 1.0);  // Forward 5 inches w/ 5 s timeout
+                armTarget += 10;
+//                encoderHoldPosition(DRIVE_SPEED, (int)UP_POSITION, 1.0);
             }
             else if (gamepad1.right_bumper) {
-                encoderDrive(DRIVE_SPEED, -UP_POSITION, 1.0);
+                armTarget -= 10;
+//                encoderHoldPosition(DRIVE_SPEED, -(int)UP_POSITION, 1.0);
             }
+
+            encoderHoldPosition(2*DRIVE_SPEED, armTarget, 0.1);
+
+            telemetry.addData("Path2", "Running at %7d, %7d", armDrive.getCurrentPosition(), armTarget);
 
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
@@ -160,17 +161,13 @@ public class TetrixTeleop extends LinearOpMode
         }
     }
 
-    public void encoderDrive(double speed,
-                             double inches,
-                             double timeoutS) {
-
-        int target;
+    public void encoderHoldPosition(double speed,
+                                    int target,
+                                    double timeoutS) {
 
         // Ensure that the opmode is still active
         if (opModeIsActive()) {
 
-            // Determine new target position and pass to motor controller
-            target = (int) (armDrive.getCurrentPosition() + (int) inches * COUNTS_PER_INCH);
             armDrive.setTargetPosition(target);
 
             // Turn on RUN_TO_POSITION
@@ -193,7 +190,6 @@ public class TetrixTeleop extends LinearOpMode
 
                 // Display it for the driver.
                 telemetry.addData("armDrive", "Running to %7d", target);
-                telemetry.addData("Path2", "Running at %7d", armDrive.getCurrentPosition());
                 telemetry.update();
             }
 
