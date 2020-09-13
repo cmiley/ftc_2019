@@ -32,9 +32,14 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
+
+import static android.os.SystemClock.sleep;
 
 /**
  * This file contains an example of an iterative (Non-Linear) "OpMode".
@@ -51,18 +56,23 @@ import com.qualcomm.robotcore.util.Range;
  */
 
 @TeleOp(name="goBILDATeleop", group="Iterative Opmode")
-public class goBILDATeleop extends OpMode
+public class goBILDATeleop extends LinearOpMode
 {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor leftDrive = null;
     private DcMotor rightDrive = null;
+    private DcMotor launchDrive = null;
+    private DcMotor armDrive = null;
+
+
+    private Servo servoTest = null;
 
     /*
      * Code to run ONCE when the driver hits INIT
      */
     @Override
-    public void init() {
+    public void runOpMode() {
         telemetry.addData("Status", "Initialized");
 
         // Initialize the hardware variables. Note that the strings used here as parameters
@@ -70,69 +80,128 @@ public class goBILDATeleop extends OpMode
         // step (using the FTC Robot Controller app on the phone).
         leftDrive  = hardwareMap.get(DcMotor.class, "left_drive");
         rightDrive = hardwareMap.get(DcMotor.class, "right_drive");
+        launchDrive = hardwareMap.get(DcMotor.class, "launcher");
+        armDrive = hardwareMap.get(DcMotor.class, "arm");
+
+
 
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
         leftDrive.setDirection(DcMotor.Direction.FORWARD);
         rightDrive.setDirection(DcMotor.Direction.REVERSE);
+        launchDrive.setDirection(DcMotor.Direction.REVERSE);
+        armDrive.setDirection(DcMotor.Direction.FORWARD);
+
+
+        servoTest = hardwareMap.get(Servo.class, "bumper");
+        servoTest.setPosition(0.5);
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
+
+        waitForStart();
+        while(opModeIsActive() && !isStopRequested()) {
+            double leftPower;
+            double rightPower;
+
+            // Choose to drive using either Tank Mode, or POV Mode
+            // Comment out the method that's not used.  The default below is POV.
+
+            // POV Mode uses left stick to go forward, and right stick to turn.
+            // - This uses basic math to combine motions and is easier to drive straight.
+            //        double drive = -gamepad1.left_stick_y;
+            //        double turn  =  gamepad1.right_stick_x;
+            //        leftPower    = Range.clip(drive + turn, -1.0, 1.0) ;
+            //        rightPower   = Range.clip(drive - turn, -1.0, 1.0) ;
+
+            if (gamepad1.right_trigger > 0) {
+                runGeckos(1);
+            } else if (gamepad1.left_trigger > 0) {
+                runGeckos(-1);
+            }
+
+            // Tank Mode uses one stick to control each wheel.
+            // - This requires no math, but it is hard to drive forward slowly and keep straight.
+            leftPower = -gamepad1.left_stick_y;
+            rightPower = -gamepad1.right_stick_y;
+
+            // Send calculated power to wheels
+            leftDrive.setPower(leftPower);
+            rightDrive.setPower(rightPower);
+
+            // Show the elapsed game time and wheel power.
+            telemetry.addData("Status", "Run Time: " + runtime.toString());
+            telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
+        }
     }
 
-    /*
-     * Code to run REPEATEDLY after the driver hits INIT, but before they hit PLAY
-     */
-    @Override
-    public void init_loop() {
+    private void runGeckos(int direction) {
+        if(direction == 1) {
+            //Launch
+            for (int i = 0; i < 10; i++) {
+                launchDrive.setPower(i * 0.1);
+                sleep(250);
+            }
+            sleep(1000);
+
+            //Move servo
+            //TODO:
+
+        }else{
+            //Intake
+            launchDrive.setPower(-0.1);
+            sleep(1000);
+        }
+
+        launchDrive.setPower(0);
     }
 
-    /*
-     * Code to run ONCE when the driver hits PLAY
-     */
-    @Override
-    public void start() {
-        runtime.reset();
-    }
 
-    /*
-     * Code to run REPEATEDLY after the driver hits PLAY but before they hit STOP
-     */
-    @Override
-    public void loop() {
-        // Setup a variable for each drive wheel to save power level for telemetry
-        double leftPower;
-        double rightPower;
+    public void encoderDrive(double speed,
+                             double inches,
+                             double timeoutS) {
 
-        // Choose to drive using either Tank Mode, or POV Mode
-        // Comment out the method that's not used.  The default below is POV.
+        int target;
 
-        // POV Mode uses left stick to go forward, and right stick to turn.
-        // - This uses basic math to combine motions and is easier to drive straight.
-//        double drive = -gamepad1.left_stick_y;
-//        double turn  =  gamepad1.right_stick_x;
-//        leftPower    = Range.clip(drive + turn, -1.0, 1.0) ;
-//        rightPower   = Range.clip(drive - turn, -1.0, 1.0) ;
+        // Ensure that the opmode is still active
+        if (opModeIsActive()) {
 
-        // Tank Mode uses one stick to control each wheel.
-        // - This requires no math, but it is hard to drive forward slowly and keep straight.
-         leftPower  = -gamepad1.left_stick_y ;
-         rightPower = -gamepad1.right_stick_y ;
+            // Determine new target position and pass to motor controller
+            target = (int) armDrive.getCurrentPosition();
+            armDrive.setTargetPosition(target);
 
-        // Send calculated power to wheels
-        leftDrive.setPower(leftPower);
-        rightDrive.setPower(rightPower);
+            // Turn on RUN_TO_POSITION
+            armDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        // Show the elapsed game time and wheel power.
-        telemetry.addData("Status", "Run Time: " + runtime.toString());
-        telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
-    }
+            // reset the timeout time and start motion
+            runtime.reset();
+            armDrive.setPower(Math.abs(speed));
 
-    /*
-     * Code to run ONCE after the driver hits STOP
-     */
-    @Override
-    public void stop() {
+
+            // keep looping while we are still active, and there is time left, and both motors are running.
+            // Note: We use (isBusy() && isBusy()) in the loop test, which means that when EITHER motor hits
+            // its target position, the motion will stop.  This is "safer" in the event that the robot will
+            // always end the motion as soon as possible.
+            // However, if you require that BOTH motors have finished their moves before the robot continues
+            // onto the next step, use (isBusy() || isBusy()) in the loop test.
+            while (opModeIsActive() &&
+                    (runtime.seconds() < timeoutS) &&
+                    armDrive.isBusy()) {
+
+                // Display it for the driver.
+                telemetry.addData("armDrive", "Running to %7d", target);
+                telemetry.addData("Path2", "Running at %7d", armDrive.getCurrentPosition());
+                telemetry.update();
+            }
+
+            // Stop all motion
+            armDrive.setPower(0);
+
+            // Turn off RUN_TO_POSITION
+            //armDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+            //  sleep(250);   // optional pause after each move
+        }
     }
 
 }
