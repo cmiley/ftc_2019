@@ -29,6 +29,9 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import android.util.Log;
+
+import com.disnodeteam.dogecv.CameraViewDisplay;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -36,6 +39,8 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
+import com.disnodeteam.dogecv.detectors.StartDetector;
+
 
 /**
  * This file contains an example of an iterative (Non-Linear) "OpMode".
@@ -59,6 +64,9 @@ public class TetrixTeleop extends OpMode
     private DcMotor leftDrive = null;
     private DcMotor rightDrive = null;
 
+    private StartDetector detector = new StartDetector(); // Create detector
+
+
     /*
      * Code to run ONCE when the driver hits INIT
      */
@@ -76,6 +84,12 @@ public class TetrixTeleop extends OpMode
         // Reverse the motor that runs backwards when connected directly to the battery
         leftDrive.setDirection(DcMotor.Direction.REVERSE);
         rightDrive.setDirection(DcMotor.Direction.FORWARD);
+
+        detector.init(hardwareMap.appContext, CameraViewDisplay.getInstance()); // Initialize it with the app context and camera
+        detector.useDefaults(); // Set detector to use default settings
+
+        detector.enable(); // Start the detector!
+        Log.e("Debug", "1 " +  detector.start_color);
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");

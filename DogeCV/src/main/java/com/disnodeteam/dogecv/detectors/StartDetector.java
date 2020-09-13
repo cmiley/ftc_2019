@@ -42,7 +42,7 @@ public class StartDetector extends DogeCVDetector {
         frameNumber++;
         if(!color_detected && frameNumber > 0) {
             Mat hsl = new Mat();
-            Imgproc.cvtColor(image, hsl, Imgproc.COLOR_BGR2HSV);
+            Imgproc.cvtColor(input, hsl, Imgproc.COLOR_BGR2HSV);
 
             Mat mask_red = new Mat();
             Mat mask_blue = new Mat();
