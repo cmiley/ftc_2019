@@ -82,7 +82,7 @@ public class TetrixAuto extends LinearOpMode {
     private ElapsedTime     runtime = new ElapsedTime();
 
     static final double     COUNTS_PER_MOTOR_REV    = 1440 ;    // eg: TETRIX Motor Encoder
-    static final double     DRIVE_GEAR_REDUCTION    = 2.0 ;     // This is < 1.0 if geared UP
+    static final double     DRIVE_GEAR_REDUCTION    = 1.6666666667 ;     // This is < 1.0 if geared UP
     static final double     WHEEL_DIAMETER_INCHES   = 4.0 ;     // For figuring circumference
     static final double     COUNTS_PER_INCH         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
                                                       (WHEEL_DIAMETER_INCHES * 3.1415);
@@ -136,14 +136,15 @@ public class TetrixAuto extends LinearOpMode {
         Log.d("TetrixAuto", "Rings Detected: " + ringdetector.ring_count);
 
         if (ringdetector.ring_count == 0) {
-            // push wobble goal to nearest square on right
+            encoderDrive(DRIVE_SPEED, 50, 60, 5000);
         }
         else if (ringdetector.ring_count == 1) {
-            // push wobble goal to second nearest square on left
+            encoderDrive(DRIVE_SPEED, 50, 60,5000);
         }
         else if (ringdetector.ring_count == 4) {
-            // push wobble goal to furthest square on right
+            encoderDrive(DRIVE_SPEED, 50, 60, 5000);
         }
+        sleep(5000);
 
         telemetry.addData("Path", "Complete");
         telemetry.update();
